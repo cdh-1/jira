@@ -1,0 +1,6 @@
+region                    = "us-east4"
+zone                      = "us-east4-a"
+# mssql_database_version    = "SQLSERVER_2019_ENTERPRISE"
+machine_type              = "e2-medium"
+boot_disk_image           = "debian-cloud/debian-9"
+# boot_disk_image_project   = "windows-sql-cloud"

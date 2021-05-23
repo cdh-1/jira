@@ -1,0 +1,53 @@
+---
+- name: Install Jira Software on Linux.
+  hosts: all
+# Change "remote_user" to desired user.
+  remote_user: root
+# Uncomment below if "remote_user" is not "root" ("sudo" is required)
+#  become: true
+  vars:
+    jira_source: https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-8.7.1-x64.bin
+
+  tasks:
+  - name: copy response.varfile
+    copy:
+      src: files/install_response.varfile
+      dest: /tmp/response.varfile
+
+  - name: download jira package
+    get_url:
+      url: "{{ jira_source }}"
+      dest: /tmp
+      mode: 0755
+    register: jira_download
+
+  - name: run jira installer
+    command: "{{ jira_download['dest'] -q -varfile /tmp/response.varfile}}"
+
+  - name: remove response.varfile
+    file:
+      path: /tmp/response.varfile
+      state: absent
+
+  - name: created systemd service
+    copy:
+      src: files/jira.service
+      dest: /etc/systemd/system/jira.service
+
+  - name: enable serivces
+    service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+    with_items:
+    - jira
+
+  - name: configre firewalld
+    firewalld:
+      port: "{{ item }}"
+      permanent: yes
+      immediate: yes
+      state: enabled
+    loop:
+      - 8080/tcp
+      - 8005/tcp
